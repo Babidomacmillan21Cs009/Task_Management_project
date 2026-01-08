@@ -34,21 +34,6 @@ public class UserService {
         return userRepo.findAll();
     }
 
-
-    public void register(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepo.save(user);
-    }
-
-    public String verify(User user) {
-        Authentication authentication = authManager.authenticate(
-                new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
-        if (authentication.isAuthenticated()){
-            return jwtService.generateToken(user.getUsername(), user.getRole());
-        }
-        return "fail";
-    }
-
     public User getUserByEmail(String email) {
         return userRepo.findByEmail(email);
     }

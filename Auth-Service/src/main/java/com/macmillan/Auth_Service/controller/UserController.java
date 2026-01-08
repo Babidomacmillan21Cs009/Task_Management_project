@@ -27,22 +27,6 @@ public class UserController {
         return userService.getAllUser();
     }
 
-    @PostMapping("/auth/register")
-    public ResponseEntity<?> register(@RequestBody User user){
-        User exist_user = userService.getUserByEmail(user.getEmail());
-
-        if (exist_user != null){
-            return new ResponseEntity<>("Account already exists", HttpStatus.NOT_ACCEPTABLE);
-        }
-        userService.register(user);
-        return new ResponseEntity<>("Registered SuccessFully",HttpStatus.ACCEPTED);
-    }
-
-    @PostMapping("/auth/login")
-    public String login(@RequestBody User user){
-        return userService.verify(user);
-    }
-
     @GetMapping("/user/getProfile")
     public ResponseEntity<?> getProfile(@AuthenticationPrincipal UserPrincipal userPrincipal) {
         if (userPrincipal == null) {
