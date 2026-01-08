@@ -1,19 +1,17 @@
 package com.macmillan.Auth_Service.service;
 
 import com.macmillan.Auth_Service.dto.UserDTO;
+import com.macmillan.Auth_Service.dto.UserUpdateDTO;
 import com.macmillan.Auth_Service.model.User;
+import com.macmillan.Auth_Service.model.UserPrincipal;
 import com.macmillan.Auth_Service.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class UserService {
@@ -51,6 +49,25 @@ public class UserService {
         userDTO.setCreatedDate(user.getCreatedDate());
         userDTO.setUpdatedDate(user.getUpdatedDate());
         return userDTO;
+    }
+
+    public User updateUser(UserPrincipal userPrincipal, UserUpdateDTO userUpdateDTO) {
+        User exist_user = userRepo.findByUsername(userPrincipal.getUsername());
+        if (exist_user == null){
+            return null;
+        }
+        exist_user.setUsername(userUpdateDTO.getUsername());
+        exist_user.setPassword(passwordEncoder.encode(userUpdateDTO.getPassword()));
+        exist_user.setUpdatedDate(LocalDate.now());
+        userRepo.save(exist_user);
+        return exist_user;
+    }
+
+    public void deleteUser(String username) {
+        User user = userRepo.findByUsername(username);
+        if (user == null)
+            return;
+        userRepo.deleteById(user.getUser_id());
     }
 }
 

@@ -27,6 +27,8 @@ public class AuthService {
 
     public void register(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        if (user.getRole() == null)
+            user.setRole("USER");
         userRepo.save(user);
     }
 
