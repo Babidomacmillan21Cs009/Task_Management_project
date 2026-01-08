@@ -49,7 +49,7 @@ public class JwtService {
     }
 
     public String extractRole(String token){
-        return (String) getAllClaims(token).get("Role");
+        return (String) getAllClaims(token).get("role");
     }
 
     public boolean validateToken(String token, String username) {

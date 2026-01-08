@@ -44,25 +44,15 @@ public class UserController {
     }
 
     @GetMapping("/user/getProfile")
-    public ResponseEntity<?> getProfile(@AuthenticationPrincipal UserPrincipal userPrincipal){
-        System.out.println(userPrincipal.getUsername());
-        if (userPrincipal == null){
+    public ResponseEntity<?> getProfile(@AuthenticationPrincipal UserPrincipal userPrincipal) {
+        if (userPrincipal == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        User user = userService.getUserByUsername(userPrincipal.getUsername());
-        System.out.println(userPrincipal.getUsername());
-        if (user != null){
-            UserDTO userDTO = new UserDTO();
-            userDTO.setUser_id(user.getUser_id());
-            userDTO.setUsername(user.getUsername());
-            userDTO.setEmail(user.getEmail());
-            userDTO.setRole(user.getRole());
-            userDTO.setCreatedDate(user.getCreatedDate());
-            userDTO.setUpdatedDate(user.getUpdatedDate());
-            return new ResponseEntity<>(userDTO,HttpStatus.OK);
-        }
-        else
+        UserDTO userDTO = userService.getUserByUsername(userPrincipal.getUsername());
+        if (userDTO == null)
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
+        return ResponseEntity.ok(userDTO);
     }
 }
 

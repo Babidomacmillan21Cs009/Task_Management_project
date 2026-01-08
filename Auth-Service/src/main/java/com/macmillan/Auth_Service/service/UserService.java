@@ -1,8 +1,11 @@
 package com.macmillan.Auth_Service.service;
 
+import com.macmillan.Auth_Service.dto.UserDTO;
 import com.macmillan.Auth_Service.model.User;
 import com.macmillan.Auth_Service.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -41,7 +44,7 @@ public class UserService {
         Authentication authentication = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
         if (authentication.isAuthenticated()){
-            return jwtService.generateToken(user.getUsername(),user.getRole());
+            return jwtService.generateToken(user.getUsername(), user.getRole());
         }
         return "fail";
     }
@@ -50,8 +53,19 @@ public class UserService {
         return userRepo.findByEmail(email);
     }
 
-    public User getUserByUsername(String username) {
-        return userRepo.findByUsername(username);
+    public UserDTO getUserByUsername(String username) {
+        User user = userRepo.findByUsername(username);
+        if (user == null)
+            return null;
+
+        UserDTO userDTO = new UserDTO();
+        userDTO.setUser_id(user.getUser_id());
+        userDTO.setUsername(user.getUsername());
+        userDTO.setEmail(user.getEmail());
+        userDTO.setRole(user.getRole());
+        userDTO.setCreatedDate(user.getCreatedDate());
+        userDTO.setUpdatedDate(user.getUpdatedDate());
+        return userDTO;
     }
 }
 

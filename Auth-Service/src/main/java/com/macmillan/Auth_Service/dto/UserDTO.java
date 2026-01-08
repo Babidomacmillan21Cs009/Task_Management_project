@@ -10,6 +10,8 @@ import java.time.LocalDate;
 
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserDTO {
     private int user_id;
     private String username;
