@@ -3,6 +3,7 @@ package com.macmillan.Auth_Service.service;
 
 import com.macmillan.Auth_Service.dto.TaskDTO;
 import com.macmillan.Auth_Service.dto.TaskResponseDTO;
+import com.macmillan.Auth_Service.mapper.TaskResponseMapper;
 import com.macmillan.Auth_Service.model.Task;
 import com.macmillan.Auth_Service.model.User;
 import com.macmillan.Auth_Service.model.UserPrincipal;
@@ -23,6 +24,9 @@ public class TaskService {
 
     @Autowired
     private TaskRepo taskRepo;
+
+    @Autowired
+    private TaskResponseMapper taskResponseMapper;
 
     public void createTask(UserPrincipal userPrincipal, TaskDTO taskDTO) {
 
@@ -50,5 +54,28 @@ public class TaskService {
                        task.getStatus(),
                        task.getDeadline()
                )).collect(Collectors.toList());
+    }
+
+    public TaskResponseDTO getTaskById(int userId, int taskId) {
+        Task task = taskRepo.findById(taskId).orElse(null);
+
+        if (task != null && userId == task.getCreatedBy()){
+            return taskResponseMapper.mapper(task);
+        }
+        return null;
+    }
+
+    public TaskResponseDTO updateTask(int userId, int taskId, TaskDTO taskDTO) {
+        Task task = taskRepo.findById(taskId).orElse(null);
+
+        if (task != null && userId == task.getCreatedBy()){
+            task.setTitle(taskDTO.getTitle());
+            task.setDescription(taskDTO.getDescription());
+            task.setStatus(taskDTO.getStatus());
+            task.setDeadline(taskDTO.getDeadline());
+            taskRepo.save(task);
+            return taskResponseMapper.mapper(task);
+        }
+        return null;
     }
 }
