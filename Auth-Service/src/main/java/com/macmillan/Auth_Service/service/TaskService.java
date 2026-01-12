@@ -3,6 +3,7 @@ package com.macmillan.Auth_Service.service;
 
 import com.macmillan.Auth_Service.dto.TaskDTO;
 import com.macmillan.Auth_Service.dto.TaskResponseDTO;
+import com.macmillan.Auth_Service.dto.TaskUpdateStatusDto;
 import com.macmillan.Auth_Service.mapper.TaskResponseMapper;
 import com.macmillan.Auth_Service.model.Task;
 import com.macmillan.Auth_Service.model.User;
@@ -62,7 +63,7 @@ public class TaskService {
     public TaskResponseDTO getTaskById(int userId, int taskId) {
         Task task = taskRepo.findById(taskId).orElse(null);
 
-        if (task != null && userId == task.getCreatedBy()){
+        if (task != null && (userId == task.getCreatedBy() || userId == task.getAssignedTo())){
             return taskResponseMapper.mapper(task);
         }
         return null;
@@ -71,7 +72,7 @@ public class TaskService {
     public TaskResponseDTO updateTask(int userId, int taskId, TaskDTO taskDTO) {
         Task task = taskRepo.findById(taskId).orElse(null);
 
-        if (task != null && userId == task.getCreatedBy()){
+        if (task != null && (userId == task.getCreatedBy() || userId == task.getAssignedTo())){
             task.setTitle(taskDTO.getTitle());
             task.setDescription(taskDTO.getDescription());
             task.setStatus(taskDTO.getStatus());
@@ -84,11 +85,10 @@ public class TaskService {
 
     public boolean deleteTask(int userId, int taskId) {
         Optional<Task>  optionalTask = taskRepo.findById(taskId);
-
         if (optionalTask.isEmpty())
             return false;
-        Task task = optionalTask.get();
 
+        Task task = optionalTask.get();
         if (task.getCreatedBy() != userId &&
                 task.getAssignedTo() != userId){
             return false;
@@ -115,5 +115,33 @@ public class TaskService {
 
     public List<Task> getAllTask() {
         return taskRepo.findAll();
+    }
+
+    public List<TaskResponseDTO> getAssignedTasks(int userId) {
+        List<Task> tasks = taskRepo.findByAssignedTo(userId);
+
+        return tasks.stream()
+                .map(task -> new TaskResponseDTO(
+                        task.getTask_id(),
+                        task.getTitle(),
+                        task.getDescription(),
+                        task.getStatus(),
+                        task.getDeadline()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public boolean updateStatus(int userId, int taskId, TaskUpdateStatusDto taskUpdateStatusDto) {
+        Optional<Task> optionalTask = taskRepo.findById(taskId);
+        if (optionalTask.isEmpty())
+            return false;
+        Task task = optionalTask.get();
+        if (task.getCreatedBy() != userId && task.getAssignedTo() != userId)
+            return false;
+
+        task.setStatus(taskUpdateStatusDto.getStatus());
+        task.setUpdatedDate(LocalDate.now());
+        taskRepo.save(task);
+        return true;
     }
 }

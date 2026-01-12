@@ -3,6 +3,7 @@ package com.macmillan.Auth_Service.controller;
 
 import com.macmillan.Auth_Service.dto.TaskDTO;
 import com.macmillan.Auth_Service.dto.TaskResponseDTO;
+import com.macmillan.Auth_Service.dto.TaskUpdateStatusDto;
 import com.macmillan.Auth_Service.model.User;
 import com.macmillan.Auth_Service.model.UserPrincipal;
 import com.macmillan.Auth_Service.repo.UserRepo;
@@ -37,19 +38,25 @@ public class TaskController {
     }
 
     @GetMapping("/task/mytasks")
-    public ResponseEntity<List<TaskResponseDTO>> getAllTasksOfUser(@AuthenticationPrincipal
+    public ResponseEntity<?> getAllTasksOfUser(@AuthenticationPrincipal
                                                                  UserPrincipal userPrincipal){
 
-        User user = userService.findByUsername(userPrincipal.getUsername());
-        int user_id = user.getUser_id();
+       if (userPrincipal == null)
+           return new ResponseEntity<>("Unauthorized", HttpStatus.NOT_FOUND);
 
-        List<TaskResponseDTO> tasks = taskService.getAllTasksOfUser(user_id);
+        User user = userService.findByUsername(userPrincipal.getUsername());
+        int userId = user.getUser_id();
+
+        List<TaskResponseDTO> tasks = taskService.getAllTasksOfUser(userId);
         return ResponseEntity.ok(tasks);
     }
 
     @GetMapping("/task/{taskId}")
     public ResponseEntity<?> getTaskById(@AuthenticationPrincipal UserPrincipal userPrincipal,
                                                        @PathVariable int taskId){
+
+        if (userPrincipal == null)
+            return new ResponseEntity<>("Unauthorized", HttpStatus.NOT_FOUND);
 
         User user = userService.findByUsername(userPrincipal.getUsername());
         int userId = user.getUser_id();
@@ -65,6 +72,9 @@ public class TaskController {
     public ResponseEntity<?> updateTask(@AuthenticationPrincipal UserPrincipal userPrincipal,
                                         @PathVariable int taskId,
                                         @RequestBody TaskDTO taskDTO){
+
+        if (userPrincipal == null)
+            return new ResponseEntity<>("Unauthorized", HttpStatus.NOT_FOUND);
 
         User user = userService.findByUsername(userPrincipal.getUsername());
         int userId = user.getUser_id();
@@ -85,14 +95,40 @@ public class TaskController {
         }
 
         User user = userService.findByUsername(userPrincipal.getUsername());
-        int user_id = user.getUser_id();
+        int userId = user.getUser_id();
 
-        boolean deleted = taskService.deleteTask(user_id, taskId);
+        boolean deleted = taskService.deleteTask(userId, taskId);
 
         if (!deleted)
             return new ResponseEntity<>("Task not found", HttpStatus.NOT_FOUND);
         return ResponseEntity.ok("Successfully Deleted");
     }
 
+    @GetMapping("/tasks/assigned")
+    public ResponseEntity<?> getAssignedTasks(@AuthenticationPrincipal UserPrincipal userPrincipal){
+        if (userPrincipal == null)
+            return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
+        User user = userService.findByUsername(userPrincipal.getUsername());
+        int userId = user.getUser_id();
+
+        List<TaskResponseDTO> tasks = taskService.getAssignedTasks(userId);
+        return ResponseEntity.ok(tasks);
+    }
+
+    @PutMapping("/tasks/{taskId}/status")
+    public ResponseEntity<?> updateStatus(@AuthenticationPrincipal UserPrincipal userPrincipal,
+                                          @PathVariable int taskId,
+                                          @RequestBody TaskUpdateStatusDto taskUpdateStatusDto){
+        if (userPrincipal == null)
+            return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
+
+        User user = userService.findByUsername(userPrincipal.getUsername());
+        int userId = user.getUser_id();
+        boolean updated = taskService.updateStatus(userId, taskId, taskUpdateStatusDto);
+
+        if (!updated)
+            return new ResponseEntity<>("Task not found or not allowed", HttpStatus.NOT_FOUND);
+        return ResponseEntity.ok("Status updated successfully");
+    }
 
 }

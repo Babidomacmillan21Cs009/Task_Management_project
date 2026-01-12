@@ -28,7 +28,7 @@ public class AdminController {
     @Autowired
     private TaskService taskService;
 
-    @GetMapping("/getUsers")
+    @GetMapping("/getAllUsers")
     public List<User> getAllUsers(){
         return adminService.getAllUsers();
     }
