@@ -5,7 +5,6 @@ import com.macmillan.Auth_Service.dto.TaskDTO;
 import com.macmillan.Auth_Service.dto.TaskResponseDTO;
 import com.macmillan.Auth_Service.model.User;
 import com.macmillan.Auth_Service.model.UserPrincipal;
-import com.macmillan.Auth_Service.repo.TaskRepo;
 import com.macmillan.Auth_Service.repo.UserRepo;
 import com.macmillan.Auth_Service.service.TaskService;
 import com.macmillan.Auth_Service.service.UserService;
@@ -37,14 +36,14 @@ public class TaskController {
          return ResponseEntity.ok("Task Created");
     }
 
-    @GetMapping("/tasks")
-    public ResponseEntity<List<TaskResponseDTO>> getAllTasks(@AuthenticationPrincipal
+    @GetMapping("/task/mytasks")
+    public ResponseEntity<List<TaskResponseDTO>> getAllTasksOfUser(@AuthenticationPrincipal
                                                                  UserPrincipal userPrincipal){
 
         User user = userService.findByUsername(userPrincipal.getUsername());
         int user_id = user.getUser_id();
 
-        List<TaskResponseDTO> tasks = taskService.getAllTasks(user_id);
+        List<TaskResponseDTO> tasks = taskService.getAllTasksOfUser(user_id);
         return ResponseEntity.ok(tasks);
     }
 
@@ -74,7 +73,26 @@ public class TaskController {
         if (taskResponseDTO == null)
             return new ResponseEntity<>("Task Not Found", HttpStatus.NOT_FOUND);
         return ResponseEntity.ok(taskResponseDTO);
-
     }
+
+
+    @DeleteMapping("/task/{taskId}")
+    public ResponseEntity<?> deleteTask(@AuthenticationPrincipal UserPrincipal userPrincipal,
+                                        @PathVariable int taskId){
+
+        if (userPrincipal == null) {
+            return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
+        }
+
+        User user = userService.findByUsername(userPrincipal.getUsername());
+        int user_id = user.getUser_id();
+
+        boolean deleted = taskService.deleteTask(user_id, taskId);
+
+        if (!deleted)
+            return new ResponseEntity<>("Task not found", HttpStatus.NOT_FOUND);
+        return ResponseEntity.ok("Successfully Deleted");
+    }
+
 
 }

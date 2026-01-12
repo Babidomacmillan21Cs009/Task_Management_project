@@ -63,11 +63,12 @@ public class UserService {
         return exist_user;
     }
 
-    public void deleteUser(String username) {
+    public boolean deleteUser(String username) {
         User user = userRepo.findByUsername(username);
         if (user == null)
-            return;
+            return false;
         userRepo.deleteById(user.getUser_id());
+        return true;
     }
 
     public User findByUsername(String username) {

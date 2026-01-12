@@ -3,8 +3,10 @@ package com.macmillan.Auth_Service.controller;
 import com.macmillan.Auth_Service.dto.RoleUpdateDTO;
 import com.macmillan.Auth_Service.dto.UserDTO;
 import com.macmillan.Auth_Service.mapper.UserMapper;
+import com.macmillan.Auth_Service.model.Task;
 import com.macmillan.Auth_Service.model.User;
 import com.macmillan.Auth_Service.service.AdminService;
+import com.macmillan.Auth_Service.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,9 +25,17 @@ public class AdminController {
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private TaskService taskService;
+
     @GetMapping("/getUsers")
     public List<User> getAllUsers(){
         return adminService.getAllUsers();
+    }
+
+    @GetMapping("/getAllTasks")
+    public List<Task> getAllTasks(){
+        return taskService.getAllTask();
     }
 
     @GetMapping("/user/{id}")
@@ -57,4 +67,21 @@ public class AdminController {
         }
         return new ResponseEntity<>("User doesn't exist", HttpStatus.NOT_FOUND);
     }
+
+    @PostMapping("/{taskId}/assign/{userId}")
+    public ResponseEntity<?> assignTask(
+            @PathVariable int taskId,
+            @PathVariable int userId) {
+
+        int result = taskService.assignTask(taskId, userId);
+
+        if (result == -1)
+            return new ResponseEntity<>("Task not found", HttpStatus.NOT_FOUND);
+
+        if (result == -2)
+            return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
+
+        return ResponseEntity.ok("Task assigned successfully");
+    }
+
 }

@@ -12,8 +12,9 @@ import com.macmillan.Auth_Service.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,10 +40,12 @@ public class TaskService {
         task.setDeadline(taskDTO.getDeadline());
         task.setCreatedBy(user_id);
         task.setStatus(taskDTO.getStatus());
+        task.setCreatedDate(LocalDate.now());
+        task.setUpdatedDate(LocalDate.now());
         taskRepo.save(task);
     }
 
-    public List<TaskResponseDTO> getAllTasks(int user_id) {
+    public List<TaskResponseDTO> getAllTasksOfUser(int user_id) {
 
         List<Task> tasks = taskRepo.findByCreatedBy(user_id);
 
@@ -77,5 +80,40 @@ public class TaskService {
             return taskResponseMapper.mapper(task);
         }
         return null;
+    }
+
+    public boolean deleteTask(int userId, int taskId) {
+        Optional<Task>  optionalTask = taskRepo.findById(taskId);
+
+        if (optionalTask.isEmpty())
+            return false;
+        Task task = optionalTask.get();
+
+        if (task.getCreatedBy() != userId &&
+                task.getAssignedTo() != userId){
+            return false;
+        }
+        taskRepo.delete(task);
+        return true;
+    }
+
+    public int assignTask(int taskId, int userId) {
+        Optional<Task> optionalTask = taskRepo.findById(taskId);
+        if (optionalTask.isEmpty())
+            return -1;
+
+        Optional<User> optionalUser = userRepo.findById(userId);
+        if (optionalUser.isEmpty())
+            return -2;
+
+        Task task = optionalTask.get();
+        task.setAssignedTo(userId);
+        task.setUpdatedDate(LocalDate.now());
+        taskRepo.save(task);
+        return 1;
+    }
+
+    public List<Task> getAllTask() {
+        return taskRepo.findAll();
     }
 }

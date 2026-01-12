@@ -51,8 +51,10 @@ public class UserController {
     public ResponseEntity<String> deleteUser(@AuthenticationPrincipal UserPrincipal userPrincipal){
         if (userPrincipal == null)
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        userService.deleteUser(userPrincipal.getUsername());
-        return new ResponseEntity<>("Successfullty Seleted",HttpStatus.OK);
+        boolean deleted = userService.deleteUser(userPrincipal.getUsername());
+        if (!deleted)
+            return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>("Successfully Deleted",HttpStatus.OK);
     }
 }
 
